@@ -438,7 +438,8 @@ public final class MainActivity extends Activity {
         row.addView(right, rightParams);
         LinearLayout.LayoutParams params = matchWrapWithTop(9);
         cardSafePadding(row);
-        return withParams(row, params);
+        row.setLayoutParams(params);
+return row;
     }
 
     private View withParams(View view, ViewGroup.LayoutParams params) {
