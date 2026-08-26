@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.DigitsKeyListener;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,15 +33,15 @@ import java.util.List;
 import java.util.Locale;
 
 public final class MainActivity extends Activity {
-    private static final int PAPER = Color.rgb(245, 242, 234);
-    private static final int SURFACE = Color.rgb(255, 253, 248);
-    private static final int INK = Color.rgb(23, 33, 27);
-    private static final int MUTED = Color.rgb(102, 112, 104);
-    private static final int GREEN = Color.rgb(23, 107, 70);
-    private static final int GREEN_DARK = Color.rgb(13, 81, 52);
-    private static final int GREEN_SOFT = Color.rgb(220, 236, 223);
-    private static final int LINE = Color.rgb(221, 217, 206);
-    private static final int DANGER = Color.rgb(179, 58, 43);
+    private static final int PAPER = Color.WHITE;
+    private static final int SURFACE = Color.WHITE;
+    private static final int INK = Color.rgb(17, 17, 17);
+    private static final int MUTED = Color.rgb(102, 102, 102);
+    private static final int GREEN = Color.rgb(17, 17, 17);
+    private static final int GREEN_DARK = Color.BLACK;
+    private static final int GREEN_SOFT = Color.rgb(244, 244, 244);
+    private static final int LINE = Color.rgb(215, 215, 215);
+    private static final int DANGER = Color.rgb(17, 17, 17);
 
     private final List<ProductForm> forms = new ArrayList<>();
     private LinearLayout cardsContainer;
@@ -67,44 +68,31 @@ public final class MainActivity extends Activity {
         scrollView.setBackgroundColor(PAPER);
 
         LinearLayout root = column();
-        root.setPadding(dp(16), dp(20), dp(16), dp(48));
+        root.setPadding(dp(16), dp(16), dp(16), dp(40));
         scrollView.addView(root, matchWrap());
 
         LinearLayout brand = row();
         brand.setGravity(Gravity.CENTER_VERTICAL);
         TextView logo = text("↗", 25, Color.WHITE, true);
         logo.setGravity(Gravity.CENTER);
-        logo.setBackground(roundRect(GREEN, 15, 0, Color.TRANSPARENT));
-        brand.addView(logo, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        logo.setBackground(roundRect(INK, 12, 0, Color.TRANSPARENT));
+        brand.addView(logo, new LinearLayout.LayoutParams(dp(44), dp(44)));
         LinearLayout brandCopy = column();
         brandCopy.setPadding(dp(12), 0, 0, 0);
-        brandCopy.addView(text("比价助手", 21, INK, true));
-        brandCopy.addView(text("完全离线 · 不保存记录", 12, MUTED, false));
+        brandCopy.addView(text("比价助手", 22, INK, true));
+        brandCopy.addView(text("离线单位价格比较", 12, MUTED, false));
         brand.addView(brandCopy, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         root.addView(brand, matchWrap());
 
-        LinearLayout hero = column();
-        hero.setPadding(dp(20), dp(22), dp(20), dp(22));
-        hero.setBackground(roundRect(SURFACE, 22, 1, LINE));
-        TextView eyebrow = text("买 得 明 白", 12, GREEN, true);
-        hero.addView(eyebrow);
-        TextView headline = text("包装不同，也能一眼看出谁更值。", 30, INK, true);
-        headline.setLineSpacing(0, 1.06f);
-        LinearLayout.LayoutParams headlineParams = matchWrap();
-        headlineParams.topMargin = dp(8);
-        hero.addView(headline, headlineParams);
-        TextView description = text("输入价格、规格和一种优惠方式，自动统一单位并排序。", 14, MUTED, false);
-        description.setLineSpacing(dp(3), 1f);
-        LinearLayout.LayoutParams descParams = matchWrap();
-        descParams.topMargin = dp(12);
-        hero.addView(description, descParams);
-        LinearLayout.LayoutParams heroParams = matchWrap();
-        heroParams.topMargin = dp(22);
-        root.addView(hero, heroParams);
+        resultContainer = column();
+        resultContainer.setVisibility(View.GONE);
+        LinearLayout.LayoutParams resultParams = matchWrap();
+        resultParams.topMargin = dp(16);
+        root.addView(resultContainer, resultParams);
 
         LinearLayout panel = column();
         panel.setPadding(dp(12), dp(16), dp(12), dp(12));
-        panel.setBackground(roundRect(SURFACE, 22, 1, LINE));
+        panel.setBackground(roundRect(SURFACE, 18, 1, LINE));
         LinearLayout header = row();
         header.setGravity(Gravity.CENTER_VERTICAL);
         header.addView(text("商品信息", 18, INK, true), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
@@ -133,17 +121,6 @@ public final class MainActivity extends Activity {
         panelParams.topMargin = dp(16);
         root.addView(panel, panelParams);
 
-        resultContainer = column();
-        resultContainer.setVisibility(View.GONE);
-        LinearLayout.LayoutParams resultParams = matchWrap();
-        resultParams.topMargin = dp(16);
-        root.addView(resultContainer, resultParams);
-
-        TextView footer = text("计算仅基于价格与规格，不代表商品质量。", 11, MUTED, false);
-        footer.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams footerParams = matchWrap();
-        footerParams.topMargin = dp(20);
-        root.addView(footer, footerParams);
         return scrollView;
     }
 
@@ -189,11 +166,11 @@ public final class MainActivity extends Activity {
 
     private void renderResult(PriceCalculator.Comparison comparison) {
         resultContainer.removeAllViews();
-        resultContainer.setBackground(roundRect(INK, 22, 0, Color.TRANSPARENT));
+        resultContainer.setBackground(roundRect(INK, 18, 0, Color.TRANSPARENT));
         resultContainer.setPadding(dp(16), dp(19), dp(16), dp(16));
         PriceCalculator.RankedProduct winner = comparison.ranking.get(0);
 
-        TextView kicker = text("最 划 算 选 择", 11, Color.rgb(181, 197, 185), true);
+        TextView kicker = text("比较结果", 12, Color.rgb(190, 190, 190), true);
         resultContainer.addView(kicker);
         TextView winnerName = text(winner.input.name, 25, Color.WHITE, true);
         LinearLayout.LayoutParams winnerNameParams = matchWrap();
@@ -203,12 +180,12 @@ public final class MainActivity extends Activity {
         resultContainer.addView(text(summary, 13, Color.rgb(208, 217, 210), false));
 
         TextView savings = text("省 ¥" + comparison.savingsAgainstSecond.toPlainString(), 30,
-                Color.rgb(242, 193, 78), true);
+                Color.WHITE, true);
         LinearLayout.LayoutParams savingsParams = matchWrap();
         savingsParams.topMargin = dp(15);
         resultContainer.addView(savings, savingsParams);
-        resultContainer.addView(text("按最优商品的总规格，与第二名等量比较", 11,
-                Color.rgb(208, 217, 210), false));
+        resultContainer.addView(text("按相同购买量与第二名比较", 11,
+                Color.rgb(190, 190, 190), false));
 
         LinearLayout ranking = column();
         ranking.setPadding(0, dp(12), 0, 0);
@@ -217,11 +194,11 @@ public final class MainActivity extends Activity {
             LinearLayout row = row();
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setPadding(dp(12), dp(11), dp(12), dp(11));
-            row.setBackground(roundRect(i == 0 ? GREEN_SOFT : SURFACE, 14, 0, Color.TRANSPARENT));
+            row.setBackground(roundRect(i == 0 ? GREEN_SOFT : SURFACE, 12, 1, i == 0 ? GREEN_SOFT : LINE));
 
             TextView rank = text(String.valueOf(i + 1), 12, i == 0 ? Color.WHITE : INK, true);
             rank.setGravity(Gravity.CENTER);
-            rank.setBackground(roundRect(i == 0 ? GREEN : Color.rgb(232, 229, 220), 9, 0, Color.TRANSPARENT));
+            rank.setBackground(roundRect(i == 0 ? INK : Color.rgb(232, 232, 232), 9, 0, Color.TRANSPARENT));
             row.addView(rank, new LinearLayout.LayoutParams(dp(30), dp(30)));
 
             LinearLayout copy = column();
@@ -236,12 +213,6 @@ public final class MainActivity extends Activity {
             ranking.addView(row, matchWrapWithBottom(8));
         }
         resultContainer.addView(ranking);
-
-        TextView note = text("节省金额按相同购买量计算，避免大小包装直接比较总价造成误导。", 12,
-                Color.rgb(90, 74, 24), false);
-        note.setPadding(dp(12), dp(11), dp(12), dp(11));
-        note.setBackground(roundRect(Color.rgb(255, 249, 223), 13, 1, Color.rgb(201, 179, 110)));
-        resultContainer.addView(note, matchWrapWithBottom(10));
 
         Button editAgain = button("修改后重新比较", false);
         editAgain.setOnClickListener(v -> {
@@ -277,8 +248,8 @@ public final class MainActivity extends Activity {
 
         ProductForm(int index) {
             card = column();
-            card.setPadding(dp(12), dp(12), dp(12), dp(12));
-            card.setBackground(roundRect(Color.WHITE, 17, 1, LINE));
+            card.setPadding(dp(14), dp(14), dp(14), dp(14));
+            card.setBackground(roundRect(Color.WHITE, 14, 1, LINE));
 
             LinearLayout cardHead = row();
             cardHead.setGravity(Gravity.CENTER_VERTICAL);
@@ -295,29 +266,33 @@ public final class MainActivity extends Activity {
             card.addView(cardHead);
 
             name = input("例如：家庭装牛奶", false);
-            card.addView(field("商品名称（选填）", name));
+            card.addView(field("商品名称（选填）", name), matchWrapWithTop(12));
 
             price = input("0.00", true);
             measureType = spinner(new String[]{"重量", "容量", "数量"});
-            card.addView(pair(field("商品标价（元）", price), field("计量类型", measureType)));
+            card.addView(field("商品标价（元）", price), matchWrapWithTop(12));
+            card.addView(field("计量类型", measureType), matchWrapWithTop(12));
 
             packs = input("1", true);
             packs.setInputType(InputType.TYPE_CLASS_NUMBER);
+            packs.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
             packs.setText("1");
             size = input("例如：500", true);
-            card.addView(pair(field("组合数量", packs), field("单件规格", size)));
+            card.addView(field("组合数量", packs), matchWrapWithTop(12));
+            card.addView(field("单件规格", size), matchWrapWithTop(12));
 
             unit = spinner(new String[]{"克", "千克"});
             discountType = spinner(new String[]{"无优惠", "立减金额", "折扣", "实付金额"});
-            card.addView(pair(field("规格单位", unit), field("优惠方式", discountType)));
+            card.addView(field("规格单位", unit), matchWrapWithTop(12));
+            card.addView(field("优惠方式", discountType), matchWrapWithTop(12));
 
             discountLabel = text("优惠值", 11, MUTED, true);
             discountValue = input("0.00", true);
             discountWrap = column();
             discountWrap.addView(discountLabel);
-            discountWrap.addView(discountValue, matchWrapWithTop(5));
+            discountWrap.addView(discountValue, matchWrapWithTop(7));
             discountWrap.setVisibility(View.GONE);
-            card.addView(discountWrap, matchWrapWithTop(9));
+            card.addView(discountWrap, matchWrapWithTop(12));
 
             TextWatcher watcher = new SimpleWatcher();
             name.addTextChangedListener(watcher);
@@ -423,56 +398,36 @@ public final class MainActivity extends Activity {
 
     private LinearLayout field(String label, View input) {
         LinearLayout wrap = column();
-        wrap.addView(text(label, 11, MUTED, true));
-        wrap.addView(input, matchWrapWithTop(5));
+        wrap.addView(text(label, 13, MUTED, true));
+        wrap.addView(input, matchWrapWithTop(7));
         return wrap;
-    }
-
-    private LinearLayout pair(View left, View right) {
-        LinearLayout row = row();
-        LinearLayout.LayoutParams leftParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        leftParams.rightMargin = dp(5);
-        LinearLayout.LayoutParams rightParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        rightParams.leftMargin = dp(5);
-        row.addView(left, leftParams);
-        row.addView(right, rightParams);
-        LinearLayout.LayoutParams params = matchWrapWithTop(9);
-        cardSafePadding(row);
-        row.setLayoutParams(params);
-return row;
-    }
-
-    private View withParams(View view, ViewGroup.LayoutParams params) {
-        view.setLayoutParams(params);
-        return view;
-    }
-
-    private void cardSafePadding(View ignored) {
-        // 保留方法以便后续统一调整双列间距。
     }
 
     private EditText input(String hint, boolean numeric) {
         EditText edit = new EditText(this);
-        edit.setTextSize(14);
+        edit.setTextSize(17);
         edit.setTextColor(INK);
         edit.setHintTextColor(Color.rgb(155, 160, 155));
         edit.setHint(hint);
         edit.setSingleLine(true);
-        edit.setPadding(dp(11), 0, dp(11), 0);
-        edit.setBackground(roundRect(SURFACE, 11, 1, LINE));
-        edit.setInputType(numeric
-                ? InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL
-                : InputType.TYPE_CLASS_TEXT);
-        edit.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)));
+        edit.setPadding(dp(14), 0, dp(14), 0);
+        edit.setBackground(roundRect(SURFACE, 10, 1, INK));
+        if (numeric) {
+            edit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            edit.setKeyListener(DigitsKeyListener.getInstance("0123456789."));
+        } else {
+            edit.setInputType(InputType.TYPE_CLASS_TEXT);
+        }
+        edit.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(58)));
         return edit;
     }
 
     private Spinner spinner(String[] values) {
         Spinner spinner = new Spinner(this, Spinner.MODE_DROPDOWN);
         spinner.setAdapter(adapter(values));
-        spinner.setPadding(dp(7), 0, dp(7), 0);
-        spinner.setBackground(roundRect(SURFACE, 11, 1, LINE));
-        spinner.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)));
+        spinner.setPadding(dp(11), 0, dp(11), 0);
+        spinner.setBackground(roundRect(SURFACE, 10, 1, INK));
+        spinner.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(58)));
         return spinner;
     }
 
@@ -482,7 +437,7 @@ return row;
             public View getView(int position, View convertView, ViewGroup parent) {
                 TextView view = (TextView) super.getView(position, convertView, parent);
                 view.setTextColor(INK);
-                view.setTextSize(14);
+                view.setTextSize(17);
                 return view;
             }
         };
@@ -499,10 +454,10 @@ return row;
         button.setAllCaps(false);
         button.setGravity(Gravity.CENTER);
         button.setPadding(dp(12), 0, dp(12), 0);
-        button.setBackground(roundRect(primary ? GREEN : Color.WHITE, 13, primary ? 0 : 1, LINE));
+        button.setBackground(roundRect(primary ? INK : Color.WHITE, 12, primary ? 0 : 1, INK));
         button.setMinHeight(0);
         button.setMinimumHeight(0);
-        button.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(48)));
+        button.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(54)));
         return button;
     }
 
