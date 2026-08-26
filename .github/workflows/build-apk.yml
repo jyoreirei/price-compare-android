@@ -20,10 +20,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: 安装 Android SDK 35
-        run: |
-          yes | sdkmanager --licenses > /dev/null
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: 配置 Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-35 build-tools;35.0.0"
 
       - name: 生成 APK
         run: |
